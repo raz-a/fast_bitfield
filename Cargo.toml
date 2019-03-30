@@ -1,0 +1,8 @@
+[package]
+name = "fast_bitfield"
+version = "0.1.0"
+authors = ["Slamus"]
+edition = "2018"
+
+[dependencies]
+cortex-m = "0.5.8"
