@@ -5,4 +5,9 @@ authors = ["Slamus"]
 edition = "2018"
 
 [dependencies]
-cortex-m = "0.5.8"
+cortex-m = "0.6.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+debug = true
