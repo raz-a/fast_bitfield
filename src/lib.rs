@@ -1,11 +1,11 @@
-//
 // Fast Bit Field
 // Defines a bitfield type with architectural sizes and fast lowest/highest bit determination
-//
 
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 
 use core::mem;
+use cpu_features;
+use debruijin;
 
 pub trait FastBitField {
 
@@ -59,18 +59,14 @@ impl FastBitField for SmallBitField {
 
     fn set_bit(&mut self, index: usize) {
         if index < SMALL_BIT_FIELD_BIT_SIZE {
-            return;
+            self.bitfield |= 1 << index;
         }
-
-        self.bitfield |= 1 << index;
     }
 
     fn clear_bit(&mut self, index: usize) {
         if index < SMALL_BIT_FIELD_BIT_SIZE {
-            return;
+            self.bitfield &= !(1 << index);
         }
-
-        self.bitfield &= !(1 << index);
     }
 
     fn get_lowest_set_bit(&self) -> isize {
@@ -78,7 +74,7 @@ impl FastBitField for SmallBitField {
             return -1;
         }
 
-        self.bitfield.trailing_zeros() as isize
+        find_lowest_set_bit(self.bitfield) as isize
     }
 
     fn get_highest_set_bit(&self) -> isize {
@@ -86,19 +82,11 @@ impl FastBitField for SmallBitField {
             return -1;
         }
 
-        (SMALL_BIT_FIELD_BIT_SIZE -  1 - self.bitfield.leading_zeros() as usize) as isize
+        find_highest_set_bit(self.bitfield) as isize
     }
 
     fn is_empty(&self) -> bool {
         self.bitfield == 0
-    }
-}
-
-impl Copy for SmallBitField { }
-
-impl Clone for SmallBitField {
-    fn clone(&self) -> SmallBitField {
-        *self
     }
 }
 
@@ -134,7 +122,7 @@ impl FastBitField for LargeBitField {
     //
 
     fn set_bit(&mut self, index: usize) {
-        if index < LARGE_BIT_FIELD_BIT_SIZE {
+        if index >= LARGE_BIT_FIELD_BIT_SIZE {
             return;
         }
 
@@ -142,21 +130,28 @@ impl FastBitField for LargeBitField {
         let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
 
         self.layer_cache |= 1 << top_layer;
-        self.bitfield[top_layer] |= 1 << bottom_layer;
+
+        unsafe {
+            let sub_field = self.bitfield.get_unchecked_mut(top_layer);
+            *sub_field |= 1 << bottom_layer;
+        }
     }
 
     fn clear_bit(&mut self, index: usize) {
-        if index < LARGE_BIT_FIELD_BIT_SIZE {
+        if index >= LARGE_BIT_FIELD_BIT_SIZE {
             return;
         }
 
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
 
-        self.bitfield[top_layer] &= !(1 << bottom_layer);
+        unsafe {
+            let sub_field = self.bitfield.get_unchecked_mut(top_layer);
+            *sub_field &= !(1 << bottom_layer);
 
-        if self.bitfield[top_layer] == 0 {
-            self.layer_cache &= ! (1 << top_layer);
+            if *sub_field == 0 {
+                self.layer_cache &= !(1 << top_layer);
+            }
         }
     }
 
@@ -165,12 +160,15 @@ impl FastBitField for LargeBitField {
             return -1;
         }
 
-        let level = self.layer_cache.trailing_zeros() as usize;
+        let level = find_lowest_set_bit(self.layer_cache);
 
-        return (
-            (level * SMALL_BIT_FIELD_BIT_SIZE) +
-            self.bitfield[level].trailing_zeros() as usize
-        ) as isize;
+        unsafe {
+            let sub_field = self.bitfield.get_unchecked(level);
+            return (
+                (level * SMALL_BIT_FIELD_BIT_SIZE) +
+                find_lowest_set_bit(*sub_field)
+            ) as isize;
+        }
     }
 
     fn get_highest_set_bit(&self) -> isize {
@@ -178,13 +176,15 @@ impl FastBitField for LargeBitField {
             return -1;
         }
 
-        let level =
-            (SMALL_BIT_FIELD_BIT_SIZE - 1 - self.layer_cache.leading_zeros() as usize) as usize;
+        let level = find_highest_set_bit(self.layer_cache);
 
-        return (
-            (level * SMALL_BIT_FIELD_BIT_SIZE) +
-            SMALL_BIT_FIELD_BIT_SIZE - 1 - self.bitfield[level].trailing_zeros() as usize
-        ) as isize
+        unsafe {
+            let sub_field = self.bitfield.get_unchecked(level);
+            return (
+                (level * SMALL_BIT_FIELD_BIT_SIZE) +
+                find_highest_set_bit(*sub_field)
+            ) as isize;
+        }
     }
 
     fn is_empty(&self) -> bool {
@@ -192,10 +192,22 @@ impl FastBitField for LargeBitField {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn it_works() {
-//         assert_eq!(2 + 2, 4);
-//     }
-// }
+fn find_lowest_set_bit(value: usize) -> usize {
+    if cpu_features::opcodes::count_leading_zeros_exists() {
+        value.trailing_zeros() as usize
+
+    } else {
+        debruijin::get_lowest_set_bit(value)
+    }
+
+}
+
+fn find_highest_set_bit(value: usize) -> usize {
+    if cpu_features::opcodes::count_leading_zeros_exists() {
+        SMALL_BIT_FIELD_BIT_SIZE -  1 - value.leading_zeros() as usize
+
+    } else {
+        debruijin::get_highest_set_bit(value)
+    }
+}
+
