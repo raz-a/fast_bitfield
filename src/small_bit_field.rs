@@ -2,23 +2,19 @@
 // Small Bitfield
 //
 
-use crate::{FastBitField,
-            find_lowest_set_bit, find_highest_set_bit,
-            SMALL_BIT_FIELD_BIT_SIZE};
+use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField, SMALL_BIT_FIELD_BIT_SIZE};
 
 pub struct SmallBitField {
-    bitfield: usize
+    bitfield: usize,
 }
-
 
 impl SmallBitField {
     pub fn new() -> SmallBitField {
-        SmallBitField{bitfield: 0}
+        SmallBitField { bitfield: 0 }
     }
 }
 
 impl FastBitField for SmallBitField {
-
     //
     // Functions
     //

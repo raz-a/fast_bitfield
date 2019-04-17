@@ -2,23 +2,26 @@
 // Large Bitfield
 //
 
-use crate::{FastBitField,
-            find_lowest_set_bit, find_highest_set_bit,
-            SMALL_BIT_FIELD_BIT_SIZE, LARGE_BIT_FIELD_BIT_SIZE};
+use crate::{
+    find_highest_set_bit, find_lowest_set_bit, FastBitField, LARGE_BIT_FIELD_BIT_SIZE,
+    SMALL_BIT_FIELD_BIT_SIZE,
+};
 
 pub struct LargeBitField {
     layer_cache: usize,
-    bitfield: [usize; SMALL_BIT_FIELD_BIT_SIZE]
+    bitfield: [usize; SMALL_BIT_FIELD_BIT_SIZE],
 }
 
 impl LargeBitField {
     pub fn new() -> LargeBitField {
-        LargeBitField{layer_cache: 0, bitfield: [0; SMALL_BIT_FIELD_BIT_SIZE]}
+        LargeBitField {
+            layer_cache: 0,
+            bitfield: [0; SMALL_BIT_FIELD_BIT_SIZE],
+        }
     }
 }
 
 impl FastBitField for LargeBitField {
-
     //
     // Functions
     //
@@ -82,7 +85,6 @@ impl FastBitField for LargeBitField {
     }
 
     fn get_lowest_set_bit_unchecked(&self) -> usize {
-
         let level = find_lowest_set_bit(self.layer_cache);
 
         unsafe {
@@ -92,7 +94,6 @@ impl FastBitField for LargeBitField {
     }
 
     fn get_highest_set_bit_unchecked(&self) -> usize {
-
         let level = find_highest_set_bit(self.layer_cache);
 
         unsafe {
