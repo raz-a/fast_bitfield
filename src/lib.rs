@@ -1,5 +1,7 @@
-// Fast Bit Field
-// Defines a bitfield type with architectural sizes and fast lowest/highest bit determination
+//! # Fast Bitfield
+//! `fast_bitfield` defines the interface as well as structures for fast bitfields.
+//! Fast bitfields are bitfields that can evaluate the lowest and highest set bits quickly and in a
+//! constant time invariant (or nearly invariaant) of the contents of the bitfield.
 
 #![cfg_attr(not(test), no_std)]
 
@@ -7,23 +9,63 @@ use core;
 use cpu_features;
 use debruijin;
 
+/// Defines the required functionality for fast bitfields
 pub trait FastBitField {
-    //
-    // Functions
-    //
 
+    /// Gets the number of bits available in the bitfield type.
+    ///
+    /// # Returns
+    /// The number of bits available.
     fn get_number_of_bits() -> usize;
 
-    //
-    // Methods
-    //
-
+    /// Sets a bit in the bit field
+    ///
+    /// # Arguments
+    /// index - Provides the bit to set.
     fn set_bit(&mut self, index: usize);
+
+    /// Clears a bit in the bit field
+    ///
+    /// # Arguments
+    /// index - Provides the bit to clear.
     fn clear_bit(&mut self, index: usize);
+
+    /// Gets the lowest set bit.
+    ///
+    /// # Returns
+    /// The lowest set bit index or -1 if no bits are set.
     fn get_lowest_set_bit(&self) -> isize;
+
+    /// Gets the highest set bit.
+    ///
+    /// # Returns
+    /// The highest set bit index or -1 if no bits are set.
     fn get_highest_set_bit(&self) -> isize;
+
+    /// Gets the lowest set bit, guaranteed to have no branches and be in constant time, completely
+    /// invariant of the state of the bit field. If no bits are set, the result is undefined.
+    ///
+    /// This function should only be used if the caller can guarantee the bitfield will always
+    /// have at least one bit set.
+    ///
+    /// # Returns
+    /// The lowest set bit index or UNDEFINED if no bits are set.
     fn get_lowest_set_bit_unchecked(&self) -> usize;
+
+    /// Gets the highest set bit, guaranteed to have no branches and be in constant time, completely
+    /// invariant of the state of the bit field. If no bits are set, the result is undefined.
+    ///
+    /// This function should only be used if the caller can guarantee the bitfield will always
+    /// have at least one bit set.
+    ///
+    /// # Returns
+    /// The highest set bit index or UNDEFINED if no bits are set.
     fn get_highest_set_bit_unchecked(&self) -> usize;
+
+    /// Determines whether or not the bitfield is empty.
+    ///
+    /// # Retuns
+    /// true if empty, false otherwise.
     fn is_empty(&self) -> bool;
 }
 
