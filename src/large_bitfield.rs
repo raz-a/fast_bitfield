@@ -46,24 +46,18 @@ impl FastBitField for LargeBitField {
     /// # Arguments
     /// index - Provides the bit to set.
     fn set_bit(&mut self, index: usize) {
-        if index >= LARGE_BIT_FIELD_BIT_SIZE {
-            return;
-        }
-
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
 
         self.layer_cache |= 1 << top_layer;
 
-        //
-        // UNSAFE: top_layer is guaraneed to be between 0 and SMALL_BIT_FIELD_SIZE - 1.
-        // No need to perform bounds checking on the array.
-        //
+        let sub_field = self.bitfield.get_mut(top_layer);
+        let sub_field = match sub_field {
+            Some(s) => s,
+            None => return,
+        };
 
-        unsafe {
-            let sub_field = self.bitfield.get_unchecked_mut(top_layer);
-            *sub_field |= 1 << bottom_layer;
-        }
+        *sub_field |= 1 << bottom_layer;
     }
 
     /// Clears a bit in the bit field
@@ -71,25 +65,18 @@ impl FastBitField for LargeBitField {
     /// # Arguments
     /// index - Provides the bit to clear.
     fn clear_bit(&mut self, index: usize) {
-        if index >= LARGE_BIT_FIELD_BIT_SIZE {
-            return;
-        }
-
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
 
-        //
-        // UNSAFE: top_layer is guaraneed to be between 0 and SMALL_BIT_FIELD_SIZE - 1.
-        // No need to perform bounds checking on the array.
-        //
+        let sub_field = self.bitfield.get_mut(top_layer);
+        let sub_field = match sub_field {
+            Some(s) => s,
+            None => return,
+        };
 
-        unsafe {
-            let sub_field = self.bitfield.get_unchecked_mut(top_layer);
-            *sub_field &= !(1 << bottom_layer);
-
-            if *sub_field == 0 {
-                self.layer_cache &= !(1 << top_layer);
-            }
+        *sub_field &= !(1 << bottom_layer);
+        if *sub_field == 0 {
+            self.layer_cache &= !(1 << top_layer);
         }
     }
 
