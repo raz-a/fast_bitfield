@@ -69,17 +69,17 @@ pub trait FastBitField {
     fn is_empty(&self) -> bool;
 }
 
-/// Defines the number of bits in a small bitfield.
-pub const SMALL_BIT_FIELD_BIT_SIZE: usize = core::mem::size_of::<usize>() * 8;
+/// Defines the maximum number of bits in a small bitfield.
+const SMALL_BIT_FIELD_BIT_SIZE: usize = core::mem::size_of::<usize>() * 8;
 
-/// Defines the number of bits in a large bitfield.
-pub const LARGE_BIT_FIELD_BIT_SIZE: usize = SMALL_BIT_FIELD_BIT_SIZE * SMALL_BIT_FIELD_BIT_SIZE;
+/// Defines the maximum number of bits in a large bitfield.
+const LARGE_BIT_FIELD_BIT_SIZE: usize = SMALL_BIT_FIELD_BIT_SIZE * SMALL_BIT_FIELD_BIT_SIZE;
 
-/// Defines a fast bitfield that contains `SMALL_BIT_FIELD_BIT_SIZE` bits.
-pub mod small_bit_field;
+/// Defines a fast bitfield that can hold `sizeof(usize) * 8` bits.
+pub mod small_bitfield;
 
-/// Defines a fast bitfield that contains `LARGE_BIT_FIELD_BIT_SIZE` bits.
-pub mod large_bit_field;
+/// Defines a fast bitfield that can hold `sizeof(usize) * sizeof(usize) * 8` bits.
+pub mod large_bitfield;
 
 /// Gets the lowest set bit of a usize value.
 ///
