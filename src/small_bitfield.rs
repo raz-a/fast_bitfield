@@ -1,6 +1,6 @@
 //! # Small Bitfield
 //! `small_bitfield` defines the structure and fast_bitfield interface for Small Bitfieds.
-//! A Small Bitfield is a wrapper type that holds a usize bitfield.
+//! A Small Bitfield is a wrapper type that holds a `usize` bitfield.
 
 use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField, SMALL_BIT_FIELD_BIT_SIZE};
 
