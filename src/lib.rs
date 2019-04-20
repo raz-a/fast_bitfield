@@ -11,7 +11,6 @@ use debruijin;
 
 /// Defines the required functionality for fast bitfields
 pub trait FastBitField {
-
     /// Gets the number of bits available in the bitfield type.
     ///
     /// # Returns

@@ -6,14 +6,12 @@ use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField, SMALL_BIT_F
 
 /// Defines the structure of the SmallBitField
 pub struct SmallBitField {
-
     /// Holds the bitfield state.
     bitfield: usize,
 }
 
 /// Defines functionality unique to SmallBitField.
 impl SmallBitField {
-
     /// Creates a new, empty SmallBitField
     ///
     /// # Returns
@@ -25,7 +23,6 @@ impl SmallBitField {
 
 /// Defines the FastBitField interface for SmallBitField.
 impl FastBitField for SmallBitField {
-
     /// Gets the number of bits available in the bitfield type.
     ///
     /// # Returns
