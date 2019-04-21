@@ -60,23 +60,6 @@ impl FastBitField for LargeBitField {
         *sub_field |= 1 << bottom_layer;
     }
 
-    /// Sets a bit in the bit field.
-    ///
-    /// # Arguments
-    /// index - Provides the bit to set.
-    ///
-    /// # Unsafe
-    /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
-    unsafe fn set_bit_unchecked(&mut self, index: usize) {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
-
-        self.layer_cache |= 1 << top_layer;
-        let sub_field = self.bitfield.get_unchecked_mut(top_layer);
-        *sub_field |= 1 << bottom_layer;
-    }
-
     /// Clears a bit in the bit field
     ///
     /// # Arguments
@@ -90,26 +73,6 @@ impl FastBitField for LargeBitField {
             Some(s) => s,
             None => return,
         };
-
-        *sub_field &= !(1 << bottom_layer);
-        if *sub_field == 0 {
-            self.layer_cache &= !(1 << top_layer);
-        }
-    }
-
-    /// Clears a bit in the bit field
-    ///
-    /// # Arguments
-    /// index - Provides the bit to clear.
-    ///
-    /// # Unsafe
-    /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
-    unsafe fn clear_bit_unchecked(&mut self, index: usize) {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
-
-        let sub_field = self.bitfield.get_unchecked_mut(top_layer);
 
         *sub_field &= !(1 << bottom_layer);
         if *sub_field == 0 {
@@ -139,6 +102,14 @@ impl FastBitField for LargeBitField {
         }
 
         self.get_highest_set_bit_unchecked() as isize
+    }
+
+    /// Determines whether or not the bitfield is empty.
+    ///
+    /// # Retuns
+    /// true if empty, false otherwise.
+    fn is_empty(&self) -> bool {
+        self.layer_cache == 0
     }
 
     /// Gets the lowest set bit, guaranteed to have no branches and be in constant time, completely
@@ -185,11 +156,40 @@ impl FastBitField for LargeBitField {
         }
     }
 
-    /// Determines whether or not the bitfield is empty.
+    /// Sets a bit in the bit field.
     ///
-    /// # Retuns
-    /// true if empty, false otherwise.
-    fn is_empty(&self) -> bool {
-        self.layer_cache == 0
+    /// # Arguments
+    /// index - Provides the bit to set.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn set_bit_unchecked(&mut self, index: usize) {
+        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
+        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
+
+        self.layer_cache |= 1 << top_layer;
+        let sub_field = self.bitfield.get_unchecked_mut(top_layer);
+        *sub_field |= 1 << bottom_layer;
+    }
+
+    /// Clears a bit in the bit field
+    ///
+    /// # Arguments
+    /// index - Provides the bit to clear.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn clear_bit_unchecked(&mut self, index: usize) {
+        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
+        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
+
+        let sub_field = self.bitfield.get_unchecked_mut(top_layer);
+
+        *sub_field &= !(1 << bottom_layer);
+        if *sub_field == 0 {
+            self.layer_cache &= !(1 << top_layer);
+        }
     }
 }
