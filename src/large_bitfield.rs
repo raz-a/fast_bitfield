@@ -29,6 +29,8 @@ impl LargeBitField {
             bitfield: [0; SMALL_BIT_FIELD_BIT_SIZE],
         }
     }
+
+    // RAZTODO: test_group, get_lowest/highest_set group, set/clear/group
 }
 
 /// Defines the FastBitField interface for LargeBitField.
@@ -193,3 +195,5 @@ impl FastBitField for LargeBitField {
         }
     }
 }
+
+// RAZTODO: Unit Tests

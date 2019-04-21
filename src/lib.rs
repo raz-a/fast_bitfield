@@ -1,13 +1,16 @@
 //! # Fast Bitfield
 //! `fast_bitfield` defines the interface as well as structures for fast bitfields.
-//! Fast bitfields are bitfields that can evaluate the lowest and highest set bits quickly and in a
-//! constant time invariant (or nearly invariaant) of the contents of the bitfield.
+//! Fast bitfields are bitfields that can evaluate the lowest and highest set bits, set and clear
+//! bits, and check for empty quickly and in a constant time invariant (or nearly invariant) of the
+//! contents of the bitfield.
 
 #![cfg_attr(not(test), no_std)]
 
 use core;
 use cpu_features;
 use debruijin;
+
+// RAZTODO: test_bit, multibit functions?
 
 /// Defines the required functionality for fast bitfields
 pub trait FastBitField {

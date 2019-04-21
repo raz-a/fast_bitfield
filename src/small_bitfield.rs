@@ -19,6 +19,8 @@ impl SmallBitField {
     pub fn new() -> SmallBitField {
         SmallBitField { bitfield: 0 }
     }
+
+    // RAZTODO: set/clear_field
 }
 
 /// Defines the FastBitField interface for SmallBitField.
@@ -131,3 +133,5 @@ impl FastBitField for SmallBitField {
         self.bitfield &= !(1 << index);
     }
 }
+
+// RAZTODO: Unit Tests
