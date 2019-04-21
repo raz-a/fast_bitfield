@@ -23,11 +23,31 @@ pub trait FastBitField {
     /// index - Provides the bit to set.
     fn set_bit(&mut self, index: usize);
 
+    /// Sets a bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to set.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn set_bit_unchecked(&mut self, index: usize);
+
     /// Clears a bit in the bit field
     ///
     /// # Arguments
     /// index - Provides the bit to clear.
     fn clear_bit(&mut self, index: usize);
+
+    /// Clears a bit in the bit field
+    ///
+    /// # Arguments
+    /// index - Provides the bit to clear.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn clear_bit_unchecked(&mut self, index: usize);
 
     /// Gets the lowest set bit.
     ///

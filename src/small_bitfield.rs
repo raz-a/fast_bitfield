@@ -41,6 +41,18 @@ impl FastBitField for SmallBitField {
         }
     }
 
+    /// Sets a bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to set.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn set_bit_unchecked(&mut self, index: usize) {
+        self.bitfield |= 1 << index;
+    }
+
     /// Clears a bit in the bit field
     ///
     /// # Arguments
@@ -49,6 +61,18 @@ impl FastBitField for SmallBitField {
         if index < SMALL_BIT_FIELD_BIT_SIZE {
             self.bitfield &= !(1 << index);
         }
+    }
+
+    /// Clears a bit in the bit field
+    ///
+    /// # Arguments
+    /// index - Provides the bit to clear.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn clear_bit_unchecked(&mut self, index: usize) {
+        self.bitfield &= !(1 << index);
     }
 
     /// Gets the lowest set bit.
