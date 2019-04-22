@@ -47,7 +47,7 @@ impl LargeBitField {
             //
 
             unsafe {
-                return Some(self. test_group_unchecked(group_index));
+                return Some(self.test_group_unchecked(group_index));
             }
         }
 
