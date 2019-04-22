@@ -88,7 +88,6 @@ impl FastBitField for SmallBitField {
     /// None if index is invalid.
     fn test_bit(&self, index: usize) -> Option<bool> {
         if index < SMALL_BIT_FIELD_BIT_SIZE {
-
             //
             // UNSAFE: The index check that makes the unsafe variant unsafe is performed before
             // calling it.
