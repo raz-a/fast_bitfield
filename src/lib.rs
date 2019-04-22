@@ -10,7 +10,7 @@ use core;
 use cpu_features;
 use debruijin;
 
-// RAZTODO: test_bit, multibit functions?
+// RAZTODO: test_bit
 
 /// Defines the required functionality for fast bitfields
 pub trait FastBitField {
@@ -35,14 +35,25 @@ pub trait FastBitField {
     /// Gets the lowest set bit.
     ///
     /// # Returns
-    /// The lowest set bit index or -1 if no bits are set.
-    fn get_lowest_set_bit(&self) -> isize;
+    /// The lowest set bit index or None if no bits are set.
+    fn get_lowest_set_bit(&self) -> Option<usize>;
 
     /// Gets the highest set bit.
     ///
     /// # Returns
-    /// The highest set bit index or -1 if no bits are set.
-    fn get_highest_set_bit(&self) -> isize;
+    /// The highest set bit index or None if no bits are set.
+    fn get_highest_set_bit(&self) -> Option<usize>;
+
+    /// Gets the value of a specific bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to test.
+    ///
+    /// # Returns
+    /// Some(true) if bit is set.
+    /// Some(false) if bit is cleared.
+    /// None if index is invalid.
+    //fn test_bit(&self, index: usize) -> Option<bool>;
 
     /// Determines whether or not the bitfield is empty.
     ///

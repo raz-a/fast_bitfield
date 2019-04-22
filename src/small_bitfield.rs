@@ -56,25 +56,25 @@ impl FastBitField for SmallBitField {
     /// Gets the lowest set bit.
     ///
     /// # Returns
-    /// The lowest set bit index or -1 if no bits are set.
-    fn get_lowest_set_bit(&self) -> isize {
+    /// The lowest set bit index or None if no bits are set.
+    fn get_lowest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
-            return -1;
+            return None;
         }
 
-        self.get_lowest_set_bit_unchecked() as isize
+        Some(self.get_lowest_set_bit_unchecked())
     }
 
     /// Gets the highest set bit.
     ///
     /// # Returns
-    /// The highest set bit index or -1 if no bits are set.
-    fn get_highest_set_bit(&self) -> isize {
+    /// The highest set bit index or None if no bits are set.
+    fn get_highest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
-            return -1;
+            return None;
         }
 
-        self.get_highest_set_bit_unchecked() as isize
+        Some(self.get_highest_set_bit_unchecked())
     }
 
     /// Determines whether or not the bitfield is empty.
