@@ -77,6 +77,31 @@ impl FastBitField for SmallBitField {
         Some(self.get_highest_set_bit_unchecked())
     }
 
+    /// Gets the value of a specific bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to test.
+    ///
+    /// # Returns
+    /// Some(true) if bit is set.
+    /// Some(false) if bit is cleared.
+    /// None if index is invalid.
+    fn test_bit(&self, index: usize) -> Option<bool> {
+        if index < SMALL_BIT_FIELD_BIT_SIZE {
+
+            //
+            // UNSAFE: The index check that makes the unsafe variant unsafe is performed before
+            // calling it.
+            //
+
+            unsafe {
+                return Some(self.test_bit_unchecked(index));
+            }
+        }
+
+        None
+    }
+
     /// Determines whether or not the bitfield is empty.
     ///
     /// # Retuns
@@ -132,6 +157,23 @@ impl FastBitField for SmallBitField {
     unsafe fn clear_bit_unchecked(&mut self, index: usize) {
         self.bitfield &= !(1 << index);
     }
+
+    /// Gets the value of a specific bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to test.
+    ///
+    /// # Returns
+    /// true if bit is set.
+    /// false if bit is cleared.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
+        (self.bitfield & (1 << index)) != 0
+    }
 }
 
+// RAZTODO: Doc Tests
 // RAZTODO: Unit Tests

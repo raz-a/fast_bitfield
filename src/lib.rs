@@ -53,7 +53,7 @@ pub trait FastBitField {
     /// Some(true) if bit is set.
     /// Some(false) if bit is cleared.
     /// None if index is invalid.
-    //fn test_bit(&self, index: usize) -> Option<bool>;
+    fn test_bit(&self, index: usize) -> Option<bool>;
 
     /// Determines whether or not the bitfield is empty.
     ///
@@ -100,6 +100,20 @@ pub trait FastBitField {
     /// This unsafe variant does not check if the index is valid for the size of
     /// the bit field.
     unsafe fn clear_bit_unchecked(&mut self, index: usize);
+
+    /// Gets the value of a specific bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to test.
+    ///
+    /// # Returns
+    /// true if bit is set.
+    /// false if bit is cleared.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn test_bit_unchecked(&self, index: usize) -> bool;
 }
 
 /// Defines the maximum number of bits in a small bitfield.

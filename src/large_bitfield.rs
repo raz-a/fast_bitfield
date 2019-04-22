@@ -106,6 +106,31 @@ impl FastBitField for LargeBitField {
         Some(self.get_highest_set_bit_unchecked())
     }
 
+    /// Gets the value of a specific bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to test.
+    ///
+    /// # Returns
+    /// Some(true) if bit is set.
+    /// Some(false) if bit is cleared.
+    /// None if index is invalid.
+    fn test_bit(&self, index: usize) -> Option<bool> {
+        if index < LARGE_BIT_FIELD_BIT_SIZE {
+
+            //
+            // UNSAFE: The index check that makes the unsafe variant unsafe is performed before
+            // calling it.
+            //
+
+            unsafe {
+                return Some(self.test_bit_unchecked(index));
+            }
+        }
+
+        None
+    }
+
     /// Determines whether or not the bitfield is empty.
     ///
     /// # Retuns
@@ -194,6 +219,27 @@ impl FastBitField for LargeBitField {
             self.layer_cache &= !(1 << top_layer);
         }
     }
+
+    /// Gets the value of a specific bit in the bit field.
+    ///
+    /// # Arguments
+    /// index - Provides the bit to test.
+    ///
+    /// # Returns
+    /// true if bit is set.
+    /// false if bit is cleared.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the index is valid for the size of
+    /// the bit field.
+    unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
+        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
+        let bottom_mask = 1 << (index % SMALL_BIT_FIELD_BIT_SIZE);
+
+        let sub_field = self.bitfield.get_unchecked(top_layer);
+        (*sub_field & bottom_mask) != 0
+    }
 }
 
+// RAZTODO: Doc Tests
 // RAZTODO: Unit Tests
