@@ -30,7 +30,48 @@ impl LargeBitField {
         }
     }
 
-    // RAZTODO: test_group, get_lowest/highest_set group, set/clear/group
+    /// Gets whether or not a specific group in the bit field has any bits set.
+    ///
+    /// # Arguments
+    /// group_index - Provides the group to test.
+    ///
+    /// # Returns
+    /// Some(true) if the group has any bits set.
+    /// Some(false) if the group as no bits set.
+    /// None if group_index is invalid.
+    pub fn test_group(&self, group_index: usize) -> Option<bool> {
+        if group_index < SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // UNSAFE: The index check that makes the unsafe variant unsafe is performed before
+            // calling it.
+            //
+
+            unsafe {
+                return Some(self. test_group_unchecked(group_index));
+            }
+        }
+
+        None
+    }
+
+    /// Gets whether or not a specific group in the bit field has any bits set.
+    ///
+    /// # Arguments
+    /// group_index - Provides the group to test.
+    ///
+    /// # Returns
+    /// Some(true) if the group has any bits set.
+    /// Some(false) if the group as no bits set.
+    /// None if group_index is invalid.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the group_index is valid for the size of
+    /// the bit field.
+    pub unsafe fn test_group_unchecked(&self, group_index: usize) -> bool {
+        (self.layer_cache & (1 << group_index)) != 0
+    }
+
+    // RAZTODO: get_lowest/highest_set group, set/clear/group
 }
 
 /// Defines the FastBitField interface for LargeBitField.

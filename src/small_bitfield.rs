@@ -20,7 +20,21 @@ impl SmallBitField {
         SmallBitField { bitfield: 0 }
     }
 
-    // RAZTODO: set/clear_field
+    /// Sets bits in the bit field.
+    ///
+    /// # Arguments
+    /// field - Provides the bits to be set.
+    pub fn set_field(&mut self, field: usize) {
+        self.bitfield |= field;
+    }
+
+    /// Clears bits in the bit field.
+    ///
+    /// # Arguments
+    /// field - Provides the bits to be cleared.
+    pub fn clear_field(&mut self, field: usize) {
+        self.bitfield &= !field;
+    }
 }
 
 /// Defines the FastBitField interface for SmallBitField.
