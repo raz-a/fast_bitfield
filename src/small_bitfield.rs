@@ -43,6 +43,13 @@ impl FastBitField for SmallBitField {
     ///
     /// # Returns
     /// The number of bits available.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// assert_eq!(SmallBitField::get_number_of_bits(), core::mem::size_of::<usize>() * 8);
+    /// ```
     fn get_number_of_bits() -> usize {
         SMALL_BIT_FIELD_BIT_SIZE
     }

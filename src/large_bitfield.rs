@@ -80,6 +80,14 @@ impl FastBitField for LargeBitField {
     ///
     /// # Returns
     /// The number of bits available.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    ///
+    /// let bits_of = core::mem::size_of::<usize>() * 8;
+    /// assert_eq!(LargeBitField::get_number_of_bits(), bits_of * bits_of);
+    /// ```
     fn get_number_of_bits() -> usize {
         LARGE_BIT_FIELD_BIT_SIZE
     }

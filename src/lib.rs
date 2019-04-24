@@ -6,7 +6,6 @@
 
 #![cfg_attr(not(test), no_std)]
 
-use core;
 use cpu_features;
 use debruijin;
 
@@ -122,9 +121,11 @@ const LARGE_BIT_FIELD_BIT_SIZE: usize = SMALL_BIT_FIELD_BIT_SIZE * SMALL_BIT_FIE
 
 /// Defines a fast bitfield that can hold `sizeof(usize) * 8` bits.
 pub mod small_bitfield;
+pub use small_bitfield::SmallBitField;
 
 /// Defines a fast bitfield that can hold `sizeof(usize) * sizeof(usize) * 8` bits.
 pub mod large_bitfield;
+pub use large_bitfield::LargeBitField;
 
 /// Gets the lowest set bit of a usize value.
 ///
