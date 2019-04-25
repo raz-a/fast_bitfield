@@ -1,14 +1,12 @@
-//! # Large Bitfield
-//! `large_bitfield` defines the structure and fast_bitfield interface for Large Bitfieds.
-//! A Large Bitfield is a strcture that holds an array of `sizeof(usize) * 8` `usize` values as well
-//! as a "layer_cache" `usize` field to quickly determine highest and lowest set bits.
 
 use crate::{
     find_highest_set_bit, find_lowest_set_bit, FastBitField, LARGE_BIT_FIELD_BIT_SIZE,
     SMALL_BIT_FIELD_BIT_SIZE,
 };
 
-/// Defines the structure of the LargeBitField
+/// Defines the structure and fast_bitfield interface for Large Bitfieds.
+/// A Large Bitfield is a strcture that holds an array of `sizeof(usize) * 8` `usize` values as well
+/// as a "layer_cache" `usize` field to quickly determine highest and lowest set bits.
 pub struct LargeBitField {
     /// Holds a bitfield describing which sub bitfields currently have any set bits.
     layer_cache: usize,
