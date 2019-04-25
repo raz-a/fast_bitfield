@@ -1,4 +1,3 @@
-
 use crate::{
     find_highest_set_bit, find_lowest_set_bit, FastBitField, LARGE_BIT_FIELD_BIT_SIZE,
     SMALL_BIT_FIELD_BIT_SIZE,
@@ -52,24 +51,137 @@ impl LargeBitField {
         None
     }
 
+    /// Sets bits in a specific group in the bit field.
+    ///
+    /// # Arguments
+    /// group_index - Provides the group within the bit field to set.
+    /// group_field - Provides the bits to set within the group.
+    ///
+    /// # Note
+    /// If the group_index provided is larger than the number of groups in the bit field. The field
+    /// will remain unchanged.
+    pub fn set_group(&mut self, group_index: usize, group_field: usize) {
+        if group_index < SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // UNSAFE: The group_index check that makes the unsafe variant unsafe is performed before
+            // calling it.
+            //
+
+            unsafe {
+                self.set_group_unchecked(group_index, group_field);
+            }
+        }
+    }
+
+    /// Clears bits in a specific group in the bit field.
+    ///
+    /// # Arguments
+    /// group_index - Provides the group within the bit field to clear.
+    /// group_field - Provides the bits to clear within the group.
+    ///
+    /// # Note
+    /// If the group_index provided is larger than the number of groups in the bit field. The field
+    /// will remain unchanged.
+    pub fn clear_group(&mut self, group_index: usize, group_field: usize) {
+        if group_index < SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // UNSAFE: The group_index check that makes the unsafe variant unsafe is performed before
+            // calling it.
+            //
+
+            unsafe {
+                self.clear_group_unchecked(group_index, group_field);
+            }
+        }
+    }
+
+    /// Sets bits in the bitfield
+    ///
+    /// # Arguments
+    /// values - Provides the bits to be set in the bitfield.
+    pub fn set_field(&mut self, values: &[usize; SMALL_BIT_FIELD_BIT_SIZE]) {
+        for index in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // UNSAFE: index is guaranteed to be less than the number of groups in the bitfield.
+            //
+
+            unsafe {
+                self.set_group_unchecked(index, values[index]);
+            }
+        }
+    }
+
+    /// Clears bits in the bitfield
+    ///
+    /// # Arguments
+    /// values - Provides the bits to be cleared in the bitfield.
+    pub fn clear_field(&mut self, values: &[usize; SMALL_BIT_FIELD_BIT_SIZE]) {
+        for index in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // UNSAFE: index is guaranteed to be less than the number of groups in the bitfield.
+            //
+
+            unsafe {
+                self.clear_group_unchecked(index, values[index]);
+            }
+        }
+    }
+
     /// Gets whether or not a specific group in the bit field has any bits set.
     ///
     /// # Arguments
     /// group_index - Provides the group to test.
     ///
     /// # Returns
-    /// Some(true) if the group has any bits set.
-    /// Some(false) if the group as no bits set.
-    /// None if group_index is invalid.
+    /// true if the group has any bits set.
+    /// false if the group as no bits set.
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the group_index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that group_index is within the number of
+    /// groups in the bit field.
     pub unsafe fn test_group_unchecked(&self, group_index: usize) -> bool {
         (self.layer_cache & (1 << group_index)) != 0
     }
 
-    // RAZTODO: get_lowest/highest_set group, set/clear/group
+    /// Sets bits in a specific group in the bit field.
+    ///
+    /// # Arguments
+    /// group_index - Provides the group within the bit field to set.
+    /// group_field - Provides the bits to set within the group.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the group_index is valid for the size of
+    /// the bit field. The caller must guarantee that group_index is within the number of
+    /// groups in the bit field.
+    pub unsafe fn set_group_unchecked(&mut self, group_index: usize, group_field: usize) {
+        let field_has_values = (group_field != 0) as usize;
+        let layer_cache_update = (1 << group_index) * field_has_values;
+
+        let subfield = self.bitfield.get_unchecked_mut(group_index);
+        *subfield |= group_field;
+
+        self.layer_cache |= layer_cache_update;
+    }
+
+    /// Clears bits in a specific group in the bit field.
+    ///
+    /// # Arguments
+    /// group_index - Provides the group within the bit field to clear.
+    /// group_field - Provides the bits to clear within the group.
+    ///
+    /// # Unsafe
+    /// This unsafe variant does not check if the group_index is valid for the size of
+    /// the bit field. The caller must guarantee that group_index is within the number of
+    /// groups in the bit field.
+    pub unsafe fn clear_group_unchecked(&mut self, group_index: usize, group_field: usize) {
+        let subfield = self.bitfield.get_unchecked_mut(group_index);
+        *subfield &= !group_field;
+
+        let is_clear = (*subfield == 0) as usize;
+        let layer_cache_update = (1 << group_index) * is_clear;
+        self.layer_cache &= !layer_cache_update;
+    }
 }
 
 /// Defines the FastBitField interface for LargeBitField.
@@ -248,7 +360,7 @@ impl FastBitField for LargeBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn set_bit_unchecked(&mut self, index: usize) {
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
@@ -265,17 +377,17 @@ impl FastBitField for LargeBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn clear_bit_unchecked(&mut self, index: usize) {
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
 
         let sub_field = self.bitfield.get_unchecked_mut(top_layer);
-
         *sub_field &= !(1 << bottom_layer);
-        if *sub_field == 0 {
-            self.layer_cache &= !(1 << top_layer);
-        }
+
+        let is_clear = (*sub_field == 0) as usize;
+        let layer_cache_update = (1 << top_layer) * is_clear;
+        self.layer_cache &= !layer_cache_update
     }
 
     /// Gets the value of a specific bit in the bit field.
@@ -289,7 +401,7 @@ impl FastBitField for LargeBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_mask = 1 << (index % SMALL_BIT_FIELD_BIT_SIZE);

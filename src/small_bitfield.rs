@@ -1,4 +1,3 @@
-
 use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField, SMALL_BIT_FIELD_BIT_SIZE};
 
 /// Defines the structure and fast_bitfield interface for Small Bitfieds.
@@ -171,7 +170,7 @@ impl FastBitField for SmallBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn set_bit_unchecked(&mut self, index: usize) {
         self.bitfield |= 1 << index;
     }
@@ -183,7 +182,7 @@ impl FastBitField for SmallBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn clear_bit_unchecked(&mut self, index: usize) {
         self.bitfield &= !(1 << index);
     }
@@ -199,7 +198,7 @@ impl FastBitField for SmallBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
         (self.bitfield & (1 << index)) != 0
     }

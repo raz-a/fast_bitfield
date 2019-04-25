@@ -85,7 +85,7 @@ pub trait FastBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn set_bit_unchecked(&mut self, index: usize);
 
     /// Clears a bit in the bit field
@@ -95,7 +95,7 @@ pub trait FastBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn clear_bit_unchecked(&mut self, index: usize);
 
     /// Gets the value of a specific bit in the bit field.
@@ -109,7 +109,7 @@ pub trait FastBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field.
+    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool;
 }
 
