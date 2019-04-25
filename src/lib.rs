@@ -32,13 +32,13 @@ pub trait FastBitField {
     /// Gets the lowest set bit.
     ///
     /// # Returns
-    /// The lowest set bit index or None if no bits are set.
+    /// The lowest set bit index or `None` if no bits are set.
     fn get_lowest_set_bit(&self) -> Option<usize>;
 
     /// Gets the highest set bit.
     ///
     /// # Returns
-    /// The highest set bit index or None if no bits are set.
+    /// The highest set bit index or `None` if no bits are set.
     fn get_highest_set_bit(&self) -> Option<usize>;
 
     /// Gets the value of a specific bit in the bit field.
@@ -47,15 +47,15 @@ pub trait FastBitField {
     /// index - Provides the bit to test.
     ///
     /// # Returns
-    /// Some(true) if bit is set.
-    /// Some(false) if bit is cleared.
-    /// None if index is invalid.
+    /// `Some(true)` if bit is set.
+    /// `Some(false)` if bit is cleared.
+    /// `None` if index is invalid.
     fn test_bit(&self, index: usize) -> Option<bool>;
 
     /// Determines whether or not the bitfield is empty.
     ///
-    /// # Retuns
-    /// true if empty, false otherwise.
+    /// # Returns
+    /// `true` if empty, `false` otherwise.
     fn is_empty(&self) -> bool;
 
     /// Gets the lowest set bit, guaranteed to have no branches and be in constant time, completely
@@ -65,7 +65,7 @@ pub trait FastBitField {
     /// have at least one bit set.
     ///
     /// # Returns
-    /// The lowest set bit index or UNDEFINED if no bits are set.
+    /// The lowest set bit index or `UNDEFINED` if no bits are set.
     fn get_lowest_set_bit_unchecked(&self) -> usize;
 
     /// Gets the highest set bit, guaranteed to have no branches and be in constant time, completely
@@ -75,7 +75,7 @@ pub trait FastBitField {
     /// have at least one bit set.
     ///
     /// # Returns
-    /// The highest set bit index or UNDEFINED if no bits are set.
+    /// The highest set bit index or `UNDEFINED` if no bits are set.
     fn get_highest_set_bit_unchecked(&self) -> usize;
 
     /// Sets a bit in the bit field.
@@ -85,7 +85,7 @@ pub trait FastBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
+    /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn set_bit_unchecked(&mut self, index: usize);
 
     /// Clears a bit in the bit field
@@ -95,7 +95,7 @@ pub trait FastBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
+    /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn clear_bit_unchecked(&mut self, index: usize);
 
     /// Gets the value of a specific bit in the bit field.
@@ -104,12 +104,12 @@ pub trait FastBitField {
     /// index - Provides the bit to test.
     ///
     /// # Returns
-    /// true if bit is set.
-    /// false if bit is cleared.
+    /// `true` if bit is set.
+    /// `false` if bit is cleared.
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
+    /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool;
 }
 
@@ -133,7 +133,7 @@ pub use large_bitfield::LargeBitField;
 /// value - The value to find the lowest set bit for.
 ///
 /// # Returns
-/// The lowest set bit index or UNDEFINED if no bits are set.
+/// The lowest set bit index or `UNDEFINED` if no bits are set.
 fn find_lowest_set_bit(value: usize) -> usize {
     if cpu_features::opcodes::count_leading_zeros_exists() {
         value.trailing_zeros() as usize
@@ -148,7 +148,7 @@ fn find_lowest_set_bit(value: usize) -> usize {
 /// value - The value to find the highest set bit for.
 ///
 /// # Returns
-/// The highest set bit index or UNDEFINED if no bits are set.
+/// The highest set bit index or `UNDEFINED` if no bits are set.
 fn find_highest_set_bit(value: usize) -> usize {
     if cpu_features::opcodes::count_leading_zeros_exists() {
         SMALL_BIT_FIELD_BIT_SIZE - 1 - value.leading_zeros() as usize

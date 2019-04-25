@@ -74,7 +74,7 @@ impl FastBitField for SmallBitField {
     /// Gets the lowest set bit.
     ///
     /// # Returns
-    /// The lowest set bit index or None if no bits are set.
+    /// The lowest set bit index or `None` if no bits are set.
     fn get_lowest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -86,7 +86,7 @@ impl FastBitField for SmallBitField {
     /// Gets the highest set bit.
     ///
     /// # Returns
-    /// The highest set bit index or None if no bits are set.
+    /// The highest set bit index or `None` if no bits are set.
     fn get_highest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -101,9 +101,9 @@ impl FastBitField for SmallBitField {
     /// index - Provides the bit to test.
     ///
     /// # Returns
-    /// Some(true) if bit is set.
-    /// Some(false) if bit is cleared.
-    /// None if index is invalid.
+    /// `Some(true)` if bit is set.
+    /// `Some(false)` if bit is cleared.
+    /// `None` if index is invalid.
     fn test_bit(&self, index: usize) -> Option<bool> {
         if index < SMALL_BIT_FIELD_BIT_SIZE {
             //
@@ -121,8 +121,8 @@ impl FastBitField for SmallBitField {
 
     /// Determines whether or not the bitfield is empty.
     ///
-    /// # Retuns
-    /// true if empty, false otherwise.
+    /// # Returns
+    /// `true` if empty, `false` otherwise.
     ///
     /// # Examples
     /// ```
@@ -146,7 +146,7 @@ impl FastBitField for SmallBitField {
     /// have at least one bit set.
     ///
     /// # Returns
-    /// The lowest set bit index or UNDEFINED if no bits are set.
+    /// The lowest set bit index or `UNDEFINED` if no bits are set.
     fn get_lowest_set_bit_unchecked(&self) -> usize {
         find_lowest_set_bit(self.bitfield)
     }
@@ -158,7 +158,7 @@ impl FastBitField for SmallBitField {
     /// have at least one bit set.
     ///
     /// # Returns
-    /// The highest set bit index or UNDEFINED if no bits are set.
+    /// The highest set bit index or `UNDEFINED` if no bits are set.
     fn get_highest_set_bit_unchecked(&self) -> usize {
         find_highest_set_bit(self.bitfield)
     }
@@ -170,7 +170,7 @@ impl FastBitField for SmallBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
+    /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn set_bit_unchecked(&mut self, index: usize) {
         self.bitfield |= 1 << index;
     }
@@ -182,7 +182,7 @@ impl FastBitField for SmallBitField {
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
+    /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn clear_bit_unchecked(&mut self, index: usize) {
         self.bitfield &= !(1 << index);
     }
@@ -193,12 +193,12 @@ impl FastBitField for SmallBitField {
     /// index - Provides the bit to test.
     ///
     /// # Returns
-    /// true if bit is set.
-    /// false if bit is cleared.
+    /// `true` if bit is set.
+    /// `false` if bit is cleared.
     ///
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
-    /// the bit field. The caller must guarantee that the index is less than get_number_of_bits().
+    /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
         (self.bitfield & (1 << index)) != 0
     }
