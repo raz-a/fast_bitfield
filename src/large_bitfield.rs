@@ -298,12 +298,17 @@ impl FastBitField for LargeBitField {
     /// ```
     /// use fast_bitfield::{FastBitField, LargeBitField};
     ///
-    /// let mut large = LargeBitField::new();
-    /// small.clear_field(core::usize::MAX);
-    /// assert!(small.is_empty());
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
     ///
-    /// small.set_bit(0);
-    /// assert!(!small.is_empty());
+    /// let mut large = LargeBitField::new();
+    ///
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    ///
+    /// large.clear_field(&clear_value);
+    /// assert!(large.is_empty());
+    ///
+    /// large.set_bit(0);
+    /// assert!(!large.is_empty());
     /// ```
     fn is_empty(&self) -> bool {
         self.layer_cache == 0
