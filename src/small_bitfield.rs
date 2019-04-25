@@ -124,6 +124,18 @@ impl FastBitField for SmallBitField {
     ///
     /// # Retuns
     /// true if empty, false otherwise.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    /// assert!(small.is_empty());
+    ///
+    /// small.set_bit(0);
+    /// assert!(!small.is_empty());
+    /// ```
     fn is_empty(&self) -> bool {
         self.bitfield == 0
     }
