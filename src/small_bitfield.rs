@@ -75,6 +75,22 @@ impl FastBitField for SmallBitField {
     ///
     /// # Returns
     /// The lowest set bit index or `None` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    ///
+    /// assert_eq!(small.get_lowest_set_bit(), None);
+    ///
+    /// small.set_bit(0);
+    /// assert_eq!(small.get_lowest_set_bit(), Some(0));
+    ///
+    /// small.set_bit(1);
+    /// assert_eq!(small.get_lowest_set_bit(), Some(0));
+    /// ```
     fn get_lowest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -87,6 +103,22 @@ impl FastBitField for SmallBitField {
     ///
     /// # Returns
     /// The highest set bit index or `None` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    ///
+    /// assert_eq!(small.get_highest_set_bit(), None);
+    ///
+    /// small.set_bit(0);
+    /// assert_eq!(small.get_highest_set_bit(), Some(0));
+    ///
+    /// small.set_bit(1);
+    /// assert_eq!(small.get_highest_set_bit(), Some(1));
+    /// ```
     fn get_highest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -104,6 +136,20 @@ impl FastBitField for SmallBitField {
     /// `Some(true)` if bit is set.
     /// `Some(false)` if bit is cleared.
     /// `None` if index is invalid.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    ///
+    /// assert_eq!(small.test_bit(1000), None);
+    /// assert_eq!(small.test_bit(5), Some(false));
+    ///
+    /// small.set_bit(5);
+    /// assert_eq!(small.test_bit(5), Some(true));
+    /// ```
     fn test_bit(&self, index: usize) -> Option<bool> {
         if index < SMALL_BIT_FIELD_BIT_SIZE {
             //
@@ -147,6 +193,20 @@ impl FastBitField for SmallBitField {
     ///
     /// # Returns
     /// The lowest set bit index or `UNDEFINED` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    ///
+    /// small.set_bit(0);
+    /// assert_eq!(small.get_lowest_set_bit_unchecked(), 0);
+    ///
+    /// small.set_bit(1);
+    /// assert_eq!(small.get_lowest_set_bit_unchecked(), 0);
+    /// ```
     fn get_lowest_set_bit_unchecked(&self) -> usize {
         find_lowest_set_bit(self.bitfield)
     }
@@ -159,6 +219,20 @@ impl FastBitField for SmallBitField {
     ///
     /// # Returns
     /// The highest set bit index or `UNDEFINED` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    ///
+    /// small.set_bit(0);
+    /// assert_eq!(small.get_highest_set_bit_unchecked(), 0);
+    ///
+    /// small.set_bit(1);
+    /// assert_eq!(small.get_highest_set_bit_unchecked(), 1);
+    /// ```
     fn get_highest_set_bit_unchecked(&self) -> usize {
         find_highest_set_bit(self.bitfield)
     }
@@ -199,10 +273,24 @@ impl FastBitField for SmallBitField {
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
     /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, SmallBitField};
+    ///
+    /// let mut small = SmallBitField::new();
+    /// small.clear_field(core::usize::MAX);
+    ///
+    /// unsafe {
+    ///     assert_eq!(small.test_bit_unchecked(7), false);
+    ///
+    ///     small.set_bit_unchecked(7);
+    ///     assert_eq!(small.test_bit_unchecked(7), true);
+    /// }
+    /// ```
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
         (self.bitfield & (1 << index)) != 0
     }
 }
 
-// RAZTODO: Doc Tests
 // RAZTODO: Unit Tests
