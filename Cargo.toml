@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Slamus"]
 edition = "2018"
 
+# RAZTODO: Update dependencies to not use local paths
 [dependencies]
 debruijin = { path = "C:\\Users\\Slamus\\OneDrive\\Projects\\RazTOS_Rust\\debruijin" }
 cpu_features = { path = "C:\\Users\\Slamus\\OneDrive\\Projects\\RazTOS_Rust\\cpu_features" }
