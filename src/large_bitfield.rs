@@ -36,6 +36,22 @@ impl LargeBitField {
     /// `Some(true)` if the group has any bits set.
     /// `Some(false)` if the group as no bits set.
     /// `None` if group_index is invalid.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// assert_eq!(large.test_group(core::usize::MAX), None);
+    /// assert_eq!(large.test_group(0), Some(false));
+    ///
+    /// large.set_bit(2);
+    /// assert_eq!(large.test_group(0), Some(true));
+    /// ```
     pub fn test_group(&self, group_index: usize) -> Option<bool> {
         if group_index < SMALL_BIT_FIELD_BIT_SIZE {
             //
@@ -140,6 +156,23 @@ impl LargeBitField {
     /// This unsafe variant does not check if the group_index is valid for the size of
     /// the bit field. The caller must guarantee that group_index is within the number of
     /// groups in the bit field.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// unsafe {
+    ///     assert_eq!(large.test_group_unchecked(0), false);
+    ///
+    ///     large.set_bit_unchecked(2);
+    ///     assert_eq!(large.test_group_unchecked(0), true);
+    /// }
+    /// ```
     pub unsafe fn test_group_unchecked(&self, group_index: usize) -> bool {
         (self.layer_cache & (1 << group_index)) != 0
     }
@@ -245,6 +278,24 @@ impl FastBitField for LargeBitField {
     ///
     /// # Returns
     /// The lowest set bit index or `None` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// assert_eq!(large.get_lowest_set_bit(), None);
+    ///
+    /// large.set_bit(7);
+    /// assert_eq!(large.get_lowest_set_bit(), Some(7));
+    ///
+    /// large.set_bit(9);
+    /// assert_eq!(large.get_lowest_set_bit(), Some(7));
+    /// ```
     fn get_lowest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -257,6 +308,24 @@ impl FastBitField for LargeBitField {
     ///
     /// # Returns
     /// The highest set bit index or `None` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// assert_eq!(large.get_highest_set_bit(), None);
+    ///
+    /// large.set_bit(7);
+    /// assert_eq!(large.get_highest_set_bit(), Some(7));
+    ///
+    /// large.set_bit(9);
+    /// assert_eq!(large.get_highest_set_bit(), Some(9));
+    /// ```
     fn get_highest_set_bit(&self) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -274,6 +343,22 @@ impl FastBitField for LargeBitField {
     /// `Some(true)` if bit is set.
     /// `Some(false)` if bit is cleared.
     /// `None` if index is invalid.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// assert_eq!(large.test_bit(core::usize::MAX), None);
+    /// assert_eq!(large.test_bit(10), Some(false));
+    ///
+    /// large.set_bit(10);
+    /// assert_eq!(large.test_bit(10), Some(true));
+    /// ```
     fn test_bit(&self, index: usize) -> Option<bool> {
         if index < LARGE_BIT_FIELD_BIT_SIZE {
             //
@@ -322,6 +407,22 @@ impl FastBitField for LargeBitField {
     ///
     /// # Returns
     /// The lowest set bit index or `UNDEFINED` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// large.set_bit(7);
+    /// assert_eq!(large.get_lowest_set_bit_unchecked(), 7);
+    ///
+    /// large.set_bit(9);
+    /// assert_eq!(large.get_lowest_set_bit_unchecked(), 7);
+    /// ```
     fn get_lowest_set_bit_unchecked(&self) -> usize {
         let level = find_lowest_set_bit(self.layer_cache);
 
@@ -344,6 +445,22 @@ impl FastBitField for LargeBitField {
     ///
     /// # Returns
     /// The highest set bit index or `UNDEFINED` if no bits are set.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// large.set_bit(7);
+    /// assert_eq!(large.get_highest_set_bit_unchecked(), 7);
+    ///
+    /// large.set_bit(9);
+    /// assert_eq!(large.get_highest_set_bit_unchecked(), 9);
+    /// ```
     fn get_highest_set_bit_unchecked(&self) -> usize {
         let level = find_highest_set_bit(self.layer_cache);
 
@@ -407,6 +524,23 @@ impl FastBitField for LargeBitField {
     /// # Unsafe
     /// This unsafe variant does not check if the index is valid for the size of
     /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
+    ///
+    /// # Examples
+    /// ```
+    /// use fast_bitfield::{FastBitField, LargeBitField};
+    /// const BITS_OF: usize = core::mem::size_of::<usize>() * 8;
+    ///
+    /// let mut large = LargeBitField::new();
+    /// let clear_value = [core::usize::MAX; BITS_OF];
+    /// large.clear_field(&clear_value);
+    ///
+    /// unsafe {
+    ///     assert_eq!(large.test_bit_unchecked(10), false);
+    ///
+    ///     large.set_bit_unchecked(10);
+    ///     assert_eq!(large.test_bit_unchecked(10), true);
+    /// }
+    /// ```
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
         let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
         let bottom_mask = 1 << (index % SMALL_BIT_FIELD_BIT_SIZE);
@@ -416,5 +550,4 @@ impl FastBitField for LargeBitField {
     }
 }
 
-// RAZTODO: Doc Tests
 // RAZTODO: Unit Tests
