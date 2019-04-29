@@ -293,4 +293,219 @@ impl FastBitField for SmallBitField {
     }
 }
 
-// RAZTODO: Unit Tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    //
+    // Constructor Test
+    //
+
+    #[test]
+    fn create_defaults_to_empty() {
+        let small = SmallBitField::new();
+        assert_eq!(small.bitfield, 0);
+        assert!(small.is_empty());
+    }
+
+    //
+    // Trait Tests
+    //
+
+    #[test]
+    fn number_of_bits() {
+        assert_eq!(
+            SmallBitField::get_number_of_bits(),
+            SMALL_BIT_FIELD_BIT_SIZE
+        );
+    }
+
+    #[test]
+    fn validate_set_bit() {
+        let mut small = SmallBitField::new();
+        let mut small_unsafe = SmallBitField::new();
+        let mut expected_value: usize = 0;
+
+        for i in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // Out of bounds set should do nothing.
+            //
+
+            small.set_bit(SMALL_BIT_FIELD_BIT_SIZE);
+            assert_eq!(small.bitfield, expected_value);
+
+            expected_value |= 1 << i;
+            small.set_bit(i);
+            assert_eq!(small.bitfield, expected_value);
+
+            //
+            // Calling set for an already set bit should result in no change.
+            //
+
+            small.set_bit(i);
+            assert_eq!(small.bitfield, expected_value);
+
+            unsafe {
+                small_unsafe.set_bit_unchecked(i);
+                assert_eq!(small_unsafe.bitfield, expected_value);
+
+                //
+                // Calling set for an already set bit should result in no change.
+                //
+
+                small_unsafe.set_bit_unchecked(i);
+                assert_eq!(small_unsafe.bitfield, expected_value);
+            }
+        }
+    }
+
+    #[test]
+    fn validate_clear_bit() {
+        let mut small = SmallBitField::new();
+        let mut small_unsafe = SmallBitField::new();
+        let mut expected_value = core::usize::MAX;
+
+        small.bitfield = core::usize::MAX;
+        small_unsafe.bitfield = core::usize::MAX;
+
+        for i in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            //
+            // Out of bounds clear should do nothing.
+            //
+
+            small.clear_bit(SMALL_BIT_FIELD_BIT_SIZE);
+            assert_eq!(small.bitfield, expected_value);
+
+            expected_value &= !(1 << i);
+            small.clear_bit(i);
+            assert_eq!(small.bitfield, expected_value);
+
+            //
+            // Calling clear for an already cleared bit should result in no change.
+            //
+
+            small.clear_bit(i);
+            assert_eq!(small.bitfield, expected_value);
+
+            unsafe {
+                small_unsafe.clear_bit_unchecked(i);
+                assert_eq!(small_unsafe.bitfield, expected_value);
+
+                //
+                // Calling clear for an already cleared bit should result in no change.
+                //
+
+                small_unsafe.clear_bit_unchecked(i);
+                assert_eq!(small_unsafe.bitfield, expected_value);
+            }
+        }
+    }
+
+    #[test]
+    fn validate_get_lowest_set_bit() {
+        let mut small = SmallBitField::new();
+
+        //
+        // Empty should result in None for checked variant
+        //
+
+        assert_eq!(small.get_lowest_set_bit(), None);
+
+        for i in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            small.set_bit(i);
+            assert_eq!(small.get_lowest_set_bit(), Some(0));
+            assert_eq!(small.get_lowest_set_bit_unchecked(), 0);
+        }
+
+        for i in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            assert_eq!(small.get_lowest_set_bit(), Some(i));
+            assert_eq!(small.get_lowest_set_bit_unchecked(), i);
+            small.clear_bit(i);
+        }
+    }
+
+    #[test]
+    fn validate_get_highest_set_bit() {
+        let mut small = SmallBitField::new();
+
+        //
+        // Empty should result in None for checked variant
+        //
+
+        assert_eq!(small.get_highest_set_bit(), None);
+
+        for i in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            small.set_bit(i);
+            assert_eq!(small.get_highest_set_bit(), Some(i));
+            assert_eq!(small.get_highest_set_bit_unchecked(), i);
+        }
+
+        for i in 0..SMALL_BIT_FIELD_BIT_SIZE {
+            assert_eq!(
+                small.get_highest_set_bit(),
+                Some(SMALL_BIT_FIELD_BIT_SIZE - 1)
+            );
+            assert_eq!(
+                small.get_highest_set_bit_unchecked(),
+                SMALL_BIT_FIELD_BIT_SIZE - 1
+            );
+            small.clear_bit(i);
+        }
+    }
+
+    #[test]
+    fn validate_test_bit() {
+        let mut small = SmallBitField::new();
+
+        //
+        // Out of bounds should return None for checked variant
+        //
+
+        assert_eq!(small.test_bit(SMALL_BIT_FIELD_BIT_SIZE), None);
+
+        //
+        // Set causes test to return true.
+        //
+
+        small.set_bit(0);
+        assert_eq!(small.test_bit(0), Some(true));
+        unsafe {
+            assert_eq!(small.test_bit_unchecked(0), true);
+        }
+
+        //
+        // Clear causes test to return false.
+        //s
+
+        small.clear_bit(0);
+        assert_eq!(small.test_bit(0), Some(false));
+        unsafe {
+            assert_eq!(small.test_bit_unchecked(0), false);
+        }
+
+        //
+        // Changing another bit has no affect on the bit being tested.
+        //
+
+        small.set_bit(1);
+        assert_eq!(small.test_bit(0), Some(false));
+        unsafe {
+            assert_eq!(small.test_bit_unchecked(0), false);
+        }
+
+        //
+        // Clear causes test to return false.
+        //
+
+        small.set_bit(0);
+        small.clear_bit(1);
+        assert_eq!(small.test_bit(0), Some(true));
+        unsafe {
+            assert_eq!(small.test_bit_unchecked(0), true);
+        }
+    }
+
+    //
+    // RAZTODO: Method Tests
+    //
+}
