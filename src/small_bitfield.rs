@@ -506,6 +506,66 @@ mod tests {
     }
 
     //
-    // RAZTODO: Method Tests
+    // Method Tests
     //
+
+    #[test]
+    fn validate_set_and_clear_field() {
+        let mut small = SmallBitField::new();
+        let mut expected_value: usize = 0;
+        let zeros: usize = 0;
+        let fives = (0x55555555_55555555 & core::usize::MAX) as usize;
+        let a_s = (0xAAAAAAAA_AAAAAAAA & core::usize::MAX) as usize;
+        let f_s = (0xFFFFFFFF_FFFFFFFF & core::usize::MAX) as usize;
+
+        //
+        // Calling set with 0 results in no change.
+        //
+
+        assert_eq!(small.bitfield, zeros);
+        small.set_field(0);
+        assert_eq!(small.bitfield, zeros);
+
+        //
+        // Setting only sets bits expected bits.
+        //
+
+        expected_value |= 1 << 1;
+        small.set_bit(1);
+
+        expected_value |= fives;
+        small.set_field(fives);
+        assert_eq!(small.bitfield, expected_value);
+
+        //
+        // Settings already set values should result in no change.
+        //
+
+        small.set_field(fives);
+        assert_eq!(small.bitfield, expected_value);
+
+        small.set_field(a_s);
+        assert_eq!(small.bitfield, f_s);
+
+        //
+        // Clearing only clears expected bits.
+        //
+
+        small.clear_field(fives);
+        assert_eq!(small.bitfield, a_s);
+
+        //
+        // Clearing already cleared values should result in no change.
+        //
+
+        small.clear_field(fives);
+        assert_eq!(small.bitfield, a_s);
+
+        //
+        // Calling clear with 0 results in no change.
+        //
+
+        small.set_field(0);
+        assert_eq!(small.bitfield, a_s);
+    }
 }
