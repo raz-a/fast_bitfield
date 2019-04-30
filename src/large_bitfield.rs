@@ -188,7 +188,6 @@ impl LargeBitField {
     /// the bit field. The caller must guarantee that group_index is within the number of
     /// groups in the bit field.
     pub unsafe fn set_group_unchecked(&mut self, group_index: usize, group_field: usize) {
-
         //
         // Turn boolean into a usize to avoid branching.
         //

@@ -293,6 +293,10 @@ impl FastBitField for SmallBitField {
     }
 }
 
+//
+// Unit Tests
+//
+
 #[cfg(test)]
 mod tests {
     use super::*;
