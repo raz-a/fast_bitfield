@@ -188,6 +188,11 @@ impl LargeBitField {
     /// the bit field. The caller must guarantee that group_index is within the number of
     /// groups in the bit field.
     pub unsafe fn set_group_unchecked(&mut self, group_index: usize, group_field: usize) {
+
+        //
+        // Turn boolean into a usize to avoid branching.
+        //
+
         let field_has_values = (group_field != 0) as usize;
         let layer_cache_update = (1 << group_index) * field_has_values;
 
@@ -210,6 +215,10 @@ impl LargeBitField {
     pub unsafe fn clear_group_unchecked(&mut self, group_index: usize, group_field: usize) {
         let subfield = self.bitfield.get_unchecked_mut(group_index);
         *subfield &= !group_field;
+
+        //
+        // Turn boolean into a usize to avoid branching.
+        //
 
         let is_clear = (*subfield == 0) as usize;
         let layer_cache_update = (1 << group_index) * is_clear;
@@ -506,6 +515,10 @@ impl FastBitField for LargeBitField {
 
         let sub_field = self.bitfield.get_unchecked_mut(top_layer);
         *sub_field &= !(1 << bottom_layer);
+
+        //
+        // Turn boolean into a usize to avoid branching.
+        //
 
         let is_clear = (*sub_field == 0) as usize;
         let layer_cache_update = (1 << top_layer) * is_clear;
