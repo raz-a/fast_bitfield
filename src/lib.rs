@@ -113,12 +113,6 @@ pub trait FastBitField {
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool;
 }
 
-/// Defines the maximum number of bits in a small bitfield.
-const SMALL_BIT_FIELD_BIT_SIZE: usize = core::mem::size_of::<usize>() * 8;
-
-/// Defines the maximum number of bits in a large bitfield.
-const LARGE_BIT_FIELD_BIT_SIZE: usize = SMALL_BIT_FIELD_BIT_SIZE * SMALL_BIT_FIELD_BIT_SIZE;
-
 /// Defines a fast bitfield that can hold `sizeof(usize) * 8` bits.
 mod small_bitfield;
 pub use small_bitfield::SmallBitField;
@@ -151,7 +145,7 @@ fn find_lowest_set_bit(value: usize) -> usize {
 /// The highest set bit index or `UNDEFINED` if no bits are set.
 fn find_highest_set_bit(value: usize) -> usize {
     if cpu_features::opcodes::count_leading_zeros_exists() {
-        SMALL_BIT_FIELD_BIT_SIZE - 1 - value.leading_zeros() as usize
+        (core::mem::size_of::<usize>() * 8) - 1 - value.leading_zeros() as usize
     } else {
         debruijin::get_highest_set_bit(value)
     }

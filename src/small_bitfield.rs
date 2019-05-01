@@ -1,4 +1,7 @@
-use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField, SMALL_BIT_FIELD_BIT_SIZE};
+use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField};
+
+/// Defines the maximum number of bits in a small bitfield.
+const SMALL_BIT_FIELD_BIT_SIZE: usize = core::mem::size_of::<usize>() * 8;
 
 /// Defines the structure and fast_bitfield interface for Small Bitfieds.
 /// A Small Bitfield is a wrapper type that holds a `usize` bitfield.

@@ -1,7 +1,10 @@
-use crate::{
-    find_highest_set_bit, find_lowest_set_bit, FastBitField, LARGE_BIT_FIELD_BIT_SIZE,
-    SMALL_BIT_FIELD_BIT_SIZE,
-};
+use crate::{find_highest_set_bit, find_lowest_set_bit, FastBitField};
+
+/// Defines the number of bitfield groups in a large bitfield
+const LARGE_BIT_FIELD_GROUP_COUNT: usize = core::mem::size_of::<usize>() * 8;
+
+/// Defines the maximum number of bits in a large bitfield.
+const LARGE_BIT_FIELD_BIT_SIZE: usize = LARGE_BIT_FIELD_GROUP_COUNT * LARGE_BIT_FIELD_GROUP_COUNT;
 
 /// Defines the structure and fast_bitfield interface for Large Bitfieds.
 /// A Large Bitfield is a strcture that holds an array of `sizeof(usize) * 8` `usize` values as well
@@ -11,7 +14,7 @@ pub struct LargeBitField {
     layer_cache: usize,
 
     /// Holds the bitfield state.
-    bitfield: [usize; SMALL_BIT_FIELD_BIT_SIZE],
+    bitfield: [usize; LARGE_BIT_FIELD_GROUP_COUNT],
 }
 
 /// Defines the FastBitField interface for LargeBitField.
@@ -23,7 +26,7 @@ impl LargeBitField {
     pub fn new() -> LargeBitField {
         LargeBitField {
             layer_cache: 0,
-            bitfield: [0; SMALL_BIT_FIELD_BIT_SIZE],
+            bitfield: [0; LARGE_BIT_FIELD_GROUP_COUNT],
         }
     }
 
@@ -53,7 +56,7 @@ impl LargeBitField {
     /// assert_eq!(large.test_group(0), Some(true));
     /// ```
     pub fn test_group(&self, group_index: usize) -> Option<bool> {
-        if group_index < SMALL_BIT_FIELD_BIT_SIZE {
+        if group_index < LARGE_BIT_FIELD_GROUP_COUNT {
             //
             // UNSAFE: The index check that makes the unsafe variant unsafe is performed before
             // calling it.
@@ -77,7 +80,7 @@ impl LargeBitField {
     /// If the group_index provided is larger than the number of groups in the bit field. The field
     /// will remain unchanged.
     pub fn set_group(&mut self, group_index: usize, group_field: usize) {
-        if group_index < SMALL_BIT_FIELD_BIT_SIZE {
+        if group_index < LARGE_BIT_FIELD_GROUP_COUNT {
             //
             // UNSAFE: The group_index check that makes the unsafe variant unsafe is performed before
             // calling it.
@@ -99,7 +102,7 @@ impl LargeBitField {
     /// If the group_index provided is larger than the number of groups in the bit field. The field
     /// will remain unchanged.
     pub fn clear_group(&mut self, group_index: usize, group_field: usize) {
-        if group_index < SMALL_BIT_FIELD_BIT_SIZE {
+        if group_index < LARGE_BIT_FIELD_GROUP_COUNT {
             //
             // UNSAFE: The group_index check that makes the unsafe variant unsafe is performed before
             // calling it.
@@ -115,8 +118,8 @@ impl LargeBitField {
     ///
     /// # Arguments
     /// values - Provides the bits to be set in the bitfield.
-    pub fn set_field(&mut self, values: &[usize; SMALL_BIT_FIELD_BIT_SIZE]) {
-        for index in 0..SMALL_BIT_FIELD_BIT_SIZE {
+    pub fn set_field(&mut self, values: &[usize; LARGE_BIT_FIELD_GROUP_COUNT]) {
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
             //
             // UNSAFE: index is guaranteed to be less than the number of groups in the bitfield.
             //
@@ -131,8 +134,8 @@ impl LargeBitField {
     ///
     /// # Arguments
     /// values - Provides the bits to be cleared in the bitfield.
-    pub fn clear_field(&mut self, values: &[usize; SMALL_BIT_FIELD_BIT_SIZE]) {
-        for index in 0..SMALL_BIT_FIELD_BIT_SIZE {
+    pub fn clear_field(&mut self, values: &[usize; LARGE_BIT_FIELD_GROUP_COUNT]) {
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
             //
             // UNSAFE: index is guaranteed to be less than the number of groups in the bitfield.
             //
@@ -248,10 +251,8 @@ impl FastBitField for LargeBitField {
     /// # Arguments
     /// index - Provides the bit to set.
     fn set_bit(&mut self, index: usize) {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
-
-        self.layer_cache |= 1 << top_layer;
+        let top_layer = index / LARGE_BIT_FIELD_GROUP_COUNT;
+        let bottom_layer = index % LARGE_BIT_FIELD_GROUP_COUNT;
 
         let sub_field = self.bitfield.get_mut(top_layer);
         let sub_field = match sub_field {
@@ -259,6 +260,7 @@ impl FastBitField for LargeBitField {
             None => return,
         };
 
+        self.layer_cache |= 1 << top_layer;
         *sub_field |= 1 << bottom_layer;
     }
 
@@ -267,8 +269,8 @@ impl FastBitField for LargeBitField {
     /// # Arguments
     /// index - Provides the bit to clear.
     fn clear_bit(&mut self, index: usize) {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
+        let top_layer = index / LARGE_BIT_FIELD_GROUP_COUNT;
+        let bottom_layer = index % LARGE_BIT_FIELD_GROUP_COUNT;
 
         let sub_field = self.bitfield.get_mut(top_layer);
         let sub_field = match sub_field {
@@ -441,7 +443,7 @@ impl FastBitField for LargeBitField {
 
         unsafe {
             let sub_field = self.bitfield.get_unchecked(level);
-            return (level * SMALL_BIT_FIELD_BIT_SIZE) + find_lowest_set_bit(*sub_field);
+            return (level * LARGE_BIT_FIELD_GROUP_COUNT) + find_lowest_set_bit(*sub_field);
         }
     }
 
@@ -479,7 +481,7 @@ impl FastBitField for LargeBitField {
 
         unsafe {
             let sub_field = self.bitfield.get_unchecked(level);
-            return (level * SMALL_BIT_FIELD_BIT_SIZE) + find_highest_set_bit(*sub_field);
+            return (level * LARGE_BIT_FIELD_GROUP_COUNT) + find_highest_set_bit(*sub_field);
         }
     }
 
@@ -492,8 +494,8 @@ impl FastBitField for LargeBitField {
     /// This unsafe variant does not check if the index is valid for the size of
     /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn set_bit_unchecked(&mut self, index: usize) {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
+        let top_layer = index / LARGE_BIT_FIELD_GROUP_COUNT;
+        let bottom_layer = index % LARGE_BIT_FIELD_GROUP_COUNT;
 
         self.layer_cache |= 1 << top_layer;
         let sub_field = self.bitfield.get_unchecked_mut(top_layer);
@@ -509,8 +511,8 @@ impl FastBitField for LargeBitField {
     /// This unsafe variant does not check if the index is valid for the size of
     /// the bit field. The caller must guarantee that the index is less than `get_number_of_bits()`.
     unsafe fn clear_bit_unchecked(&mut self, index: usize) {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_layer = index % SMALL_BIT_FIELD_BIT_SIZE;
+        let top_layer = index / LARGE_BIT_FIELD_GROUP_COUNT;
+        let bottom_layer = index % LARGE_BIT_FIELD_GROUP_COUNT;
 
         let sub_field = self.bitfield.get_unchecked_mut(top_layer);
         *sub_field &= !(1 << bottom_layer);
@@ -554,12 +556,279 @@ impl FastBitField for LargeBitField {
     /// }
     /// ```
     unsafe fn test_bit_unchecked(&self, index: usize) -> bool {
-        let top_layer = index / SMALL_BIT_FIELD_BIT_SIZE;
-        let bottom_mask = 1 << (index % SMALL_BIT_FIELD_BIT_SIZE);
+        let top_layer = index / LARGE_BIT_FIELD_GROUP_COUNT;
+        let bottom_mask = 1 << (index % LARGE_BIT_FIELD_GROUP_COUNT);
 
         let sub_field = self.bitfield.get_unchecked(top_layer);
         (*sub_field & bottom_mask) != 0
     }
 }
 
-// RAZTODO: Unit Tests
+//
+// Unit Tests
+//
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    //
+    // Constructor Test
+    //
+
+    #[test]
+    fn create_defaults_to_empty() {
+        let large = LargeBitField::new();
+
+        assert_eq!(large.layer_cache, 0);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], 0);
+        }
+
+        assert!(large.is_empty());
+    }
+
+    //
+    // Trait Tests
+    //
+
+    #[test]
+    fn number_of_bits() {
+        assert_eq!(
+            LargeBitField::get_number_of_bits(),
+            LARGE_BIT_FIELD_BIT_SIZE
+        );
+    }
+
+    #[test]
+    fn validate_set_bit() {
+        let mut large = LargeBitField::new();
+        let mut large_unsafe = LargeBitField::new();
+        let mut expected_toplayer: usize = 0;
+        let mut expected_bitfield: [usize; LARGE_BIT_FIELD_GROUP_COUNT] =
+            [0; LARGE_BIT_FIELD_GROUP_COUNT];
+
+        for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
+            //
+            // Out of bounds set should do nothing.
+            //
+
+            large.set_bit(LARGE_BIT_FIELD_BIT_SIZE);
+            assert_eq!(large.layer_cache, expected_toplayer);
+            for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                assert_eq!(large.bitfield[index], expected_bitfield[index]);
+            }
+
+            let active_group = i / LARGE_BIT_FIELD_GROUP_COUNT;
+            expected_toplayer |= 1 << active_group;
+            expected_bitfield[active_group] |= 1 << (i % LARGE_BIT_FIELD_GROUP_COUNT);
+
+            large.set_bit(i);
+            assert_eq!(large.layer_cache, expected_toplayer);
+            for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                assert_eq!(large.bitfield[index], expected_bitfield[index]);
+            }
+
+            //
+            // Calling set for an already set bit should result in no change.
+            //
+
+            large.set_bit(i);
+            assert_eq!(large.layer_cache, expected_toplayer);
+            for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                assert_eq!(large.bitfield[index], expected_bitfield[index]);
+            }
+
+            unsafe {
+                large_unsafe.set_bit_unchecked(i);
+                assert_eq!(large.layer_cache, expected_toplayer);
+                for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                    assert_eq!(large.bitfield[index], expected_bitfield[index]);
+                }
+
+                //
+                // Calling set for an already set bit should result in no change.
+                //
+
+                large_unsafe.set_bit_unchecked(i);
+                for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                    assert_eq!(large.bitfield[index], expected_bitfield[index]);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn validate_clear_bit() {
+        let mut large = LargeBitField::new();
+        let mut large_unsafe = LargeBitField::new();
+        let mut expected_toplayer: usize = core::usize::MAX;
+        let mut expected_bitfield: [usize; LARGE_BIT_FIELD_GROUP_COUNT] =
+            [core::usize::MAX; LARGE_BIT_FIELD_GROUP_COUNT];
+
+        large.layer_cache = core::usize::MAX;
+        large.bitfield = [core::usize::MAX; LARGE_BIT_FIELD_GROUP_COUNT];
+        large_unsafe.layer_cache = core::usize::MAX;
+        large_unsafe.bitfield = [core::usize::MAX; LARGE_BIT_FIELD_GROUP_COUNT];
+
+        for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
+            //
+            // Out of bounds set should do nothing.
+            //
+
+            large.clear_bit(LARGE_BIT_FIELD_BIT_SIZE);
+            assert_eq!(large.layer_cache, expected_toplayer);
+            for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                assert_eq!(large.bitfield[index], expected_bitfield[index]);
+            }
+
+            let active_group = i / LARGE_BIT_FIELD_GROUP_COUNT;
+            expected_bitfield[active_group] &= !(1 << (i % LARGE_BIT_FIELD_GROUP_COUNT));
+            if expected_bitfield[active_group] == 0 {
+                expected_toplayer &= !(1 << active_group);
+            }
+
+            large.clear_bit(i);
+            assert_eq!(large.layer_cache, expected_toplayer);
+            for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                assert_eq!(large.bitfield[index], expected_bitfield[index]);
+            }
+
+            //
+            // Calling clear for an already cleared bit should result in no change.
+            //
+
+            large.clear_bit(i);
+            assert_eq!(large.layer_cache, expected_toplayer);
+            for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                assert_eq!(large.bitfield[index], expected_bitfield[index]);
+            }
+
+            unsafe {
+                large_unsafe.clear_bit_unchecked(i);
+                assert_eq!(large.layer_cache, expected_toplayer);
+                for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                    assert_eq!(large.bitfield[index], expected_bitfield[index]);
+                }
+
+                //
+                // Calling clear for an already cleared bit should result in no change.
+                //
+
+                large_unsafe.clear_bit_unchecked(i);
+                for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+                    assert_eq!(large.bitfield[index], expected_bitfield[index]);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn validate_get_lowest_set_bit() {
+        let mut large = LargeBitField::new();
+
+        //
+        // Empty should result in None for checked variant
+        //
+
+        assert_eq!(large.get_lowest_set_bit(), None);
+
+        for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
+            large.set_bit(i);
+            assert_eq!(large.get_lowest_set_bit(), Some(0));
+            assert_eq!(large.get_lowest_set_bit_unchecked(), 0);
+        }
+
+        for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
+            assert_eq!(large.get_lowest_set_bit(), Some(i));
+            assert_eq!(large.get_lowest_set_bit_unchecked(), i);
+            large.clear_bit(i);
+        }
+    }
+
+    #[test]
+    fn validate_get_highest_set_bit() {
+        let mut large = LargeBitField::new();
+
+        //
+        // Empty should result in None for checked variant
+        //
+
+        assert_eq!(large.get_highest_set_bit(), None);
+
+        for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
+            large.set_bit(i);
+            assert_eq!(large.get_highest_set_bit(), Some(i));
+            assert_eq!(large.get_highest_set_bit_unchecked(), i);
+        }
+
+        for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
+            assert_eq!(
+                large.get_highest_set_bit(),
+                Some(LARGE_BIT_FIELD_BIT_SIZE - 1)
+            );
+            assert_eq!(
+                large.get_highest_set_bit_unchecked(),
+                LARGE_BIT_FIELD_BIT_SIZE - 1
+            );
+            large.clear_bit(i);
+        }
+    }
+
+    #[test]
+    fn validate_test_bit() {
+        let mut large = LargeBitField::new();
+
+        //
+        // Out of bounds should return None for checked variant
+        //
+
+        assert_eq!(large.test_bit(LARGE_BIT_FIELD_BIT_SIZE), None);
+
+        //
+        // Set causes test to return true.
+        //
+
+        large.set_bit(0);
+        assert_eq!(large.test_bit(0), Some(true));
+        unsafe {
+            assert_eq!(large.test_bit_unchecked(0), true);
+        }
+
+        //
+        // Clear causes test to return false.
+        //s
+
+        large.clear_bit(0);
+        assert_eq!(large.test_bit(0), Some(false));
+        unsafe {
+            assert_eq!(large.test_bit_unchecked(0), false);
+        }
+
+        //
+        // Changing another bit has no affect on the bit being tested.
+        //
+
+        large.set_bit(1);
+        assert_eq!(large.test_bit(0), Some(false));
+        unsafe {
+            assert_eq!(large.test_bit_unchecked(0), false);
+        }
+
+        //
+        // Clear causes test to return false.
+        //
+
+        large.set_bit(0);
+        large.clear_bit(1);
+        assert_eq!(large.test_bit(0), Some(true));
+        unsafe {
+            assert_eq!(large.test_bit_unchecked(0), true);
+        }
+    }
+
+    //
+    // RAZTODO: Method Tests
+    //
+
+}
