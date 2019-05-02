@@ -604,9 +604,8 @@ mod tests {
     fn validate_set_bit() {
         let mut large = LargeBitField::new();
         let mut large_unsafe = LargeBitField::new();
-        let mut expected_toplayer: usize = 0;
-        let mut expected_bitfield: [usize; LARGE_BIT_FIELD_GROUP_COUNT] =
-            [0; LARGE_BIT_FIELD_GROUP_COUNT];
+        let mut expected_toplayer = 0 as usize;
+        let mut expected_bitfield = [0 as usize; LARGE_BIT_FIELD_GROUP_COUNT];
 
         for i in 0..LARGE_BIT_FIELD_BIT_SIZE {
             //
@@ -662,9 +661,8 @@ mod tests {
     fn validate_clear_bit() {
         let mut large = LargeBitField::new();
         let mut large_unsafe = LargeBitField::new();
-        let mut expected_toplayer: usize = core::usize::MAX;
-        let mut expected_bitfield: [usize; LARGE_BIT_FIELD_GROUP_COUNT] =
-            [core::usize::MAX; LARGE_BIT_FIELD_GROUP_COUNT];
+        let mut expected_toplayer = core::usize::MAX;
+        let mut expected_bitfield = [core::usize::MAX; LARGE_BIT_FIELD_GROUP_COUNT];
 
         large.layer_cache = core::usize::MAX;
         large.bitfield = [core::usize::MAX; LARGE_BIT_FIELD_GROUP_COUNT];
@@ -828,7 +826,281 @@ mod tests {
     }
 
     //
-    // RAZTODO: Method Tests
+    // Method Tests
     //
 
+     #[test]
+    fn validate_set_and_clear_field() {
+        let mut large = LargeBitField::new();
+        let mut expected_toplayer: usize = 0;
+        let mut expected_bitfield = [0 as usize; LARGE_BIT_FIELD_GROUP_COUNT];
+
+        let zeros = [0 as usize; LARGE_BIT_FIELD_GROUP_COUNT];
+        let fives =
+            [(0x55555555_55555555 & core::usize::MAX) as usize; LARGE_BIT_FIELD_GROUP_COUNT];
+
+        let a_s = [(0xAAAAAAAA_AAAAAAAA & core::usize::MAX) as usize; LARGE_BIT_FIELD_GROUP_COUNT];
+        let f_s = [(0xFFFFFFFF_FFFFFFFF & core::usize::MAX) as usize; LARGE_BIT_FIELD_GROUP_COUNT];
+
+        //
+        // Calling set with 0 results in no change.
+        //
+
+        assert_eq!(large.layer_cache, 0);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], zeros[index]);
+        }
+
+        large.set_field(&zeros);
+
+        assert_eq!(large.layer_cache, 0);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], zeros[index]);
+        }
+
+        //
+        // Setting only sets bits expected bits.
+        //
+
+        expected_bitfield[1 / LARGE_BIT_FIELD_GROUP_COUNT] |=
+            1 << (1 % LARGE_BIT_FIELD_GROUP_COUNT);
+
+        expected_toplayer |= 1 << (1 / LARGE_BIT_FIELD_GROUP_COUNT);
+
+        large.set_bit(1);
+
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            expected_bitfield[index] |= fives[index];
+            if fives[index] != 0 {
+                expected_toplayer |= 1 << index;
+            }
+        }
+
+        large.set_field(&fives);
+
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        //
+        // Settings already set values should result in no change.
+        //
+
+        large.set_field(&fives);
+
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        large.set_field(&a_s);
+        assert_eq!(large.layer_cache, core::usize::MAX);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], f_s[index]);
+        }
+
+        //
+        // Clearing only clears expected bits.
+        //
+
+        large.clear_field(&fives);
+        assert_eq!(large.layer_cache, core::usize::MAX);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], a_s[index]);
+        }
+
+        //
+        // Clearing already cleared values should result in no change.
+        //
+
+        large.clear_field(&fives);
+        assert_eq!(large.layer_cache, core::usize::MAX);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], a_s[index]);
+        }
+
+        //
+        // Calling clear with 0 results in no change.
+        //
+
+        large.clear_field(&zeros);
+        assert_eq!(large.layer_cache, core::usize::MAX);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], a_s[index]);
+        }
+    }
+
+    #[test]
+    fn validate_set_and_clear_group() {
+        let mut large = LargeBitField::new();
+        let mut large_unsafe = LargeBitField::new();
+        let mut expected_toplayer: usize = 0;
+        let mut expected_bitfield = [0 as usize; LARGE_BIT_FIELD_GROUP_COUNT];
+        let fives = (0x55555555_55555555 & core::usize::MAX) as usize;
+        let first_group = 0;
+        let second_group = 2;
+        let third_group = 5;
+
+        //
+        // Verify Set Group
+        //
+
+        expected_toplayer |= 1 << first_group;
+        expected_bitfield[first_group] |= fives;
+
+        expected_toplayer |= 1 << second_group;
+        expected_bitfield[second_group] |= fives;
+
+        large.set_group(first_group, fives);
+        large.set_group(second_group, fives);
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        unsafe {
+            large_unsafe.set_group_unchecked(first_group, fives);
+            large_unsafe.set_group_unchecked(second_group, fives);
+        }
+
+        assert_eq!(large_unsafe.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large_unsafe.bitfield[index], expected_bitfield[index]);
+        }
+
+        //
+        // Calling set out of bounds results in no change
+        //
+
+        large.set_group(LARGE_BIT_FIELD_GROUP_COUNT, fives);
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        //
+        // Calling set with 0, will result in no change
+        //
+
+        large.set_group(third_group, 0);
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        unsafe {
+            large_unsafe.set_group_unchecked(third_group, 0);
+        }
+
+        assert_eq!(large_unsafe.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large_unsafe.bitfield[index], expected_bitfield[index]);
+        }
+
+        //
+        // Verify Clear Group
+        //
+
+        expected_toplayer &= !(1 << first_group);
+        expected_bitfield[first_group] &= !fives;
+
+        large.clear_group(first_group, fives);
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        unsafe {
+            large_unsafe.clear_group_unchecked(first_group, fives);
+        }
+
+        assert_eq!(large_unsafe.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large_unsafe.bitfield[index], expected_bitfield[index]);
+        }
+
+        //
+        // Calling clear out of bounds results in no change
+        //
+
+        large.clear_group(LARGE_BIT_FIELD_GROUP_COUNT, fives);
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        //
+        // Calling clear with 0, will result in no change
+        //
+
+        large.clear_group(second_group, 0);
+        assert_eq!(large.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large.bitfield[index], expected_bitfield[index]);
+        }
+
+        unsafe {
+            large_unsafe.clear_group_unchecked(second_group, 0);
+        }
+
+        assert_eq!(large_unsafe.layer_cache, expected_toplayer);
+        for index in 0..LARGE_BIT_FIELD_GROUP_COUNT {
+            assert_eq!(large_unsafe.bitfield[index], expected_bitfield[index]);
+        }
+    }
+
+    #[test]
+    fn validate_test_group() {
+        let mut large = LargeBitField::new();
+        let bit = 20;
+        let different_group_bit = bit + LARGE_BIT_FIELD_GROUP_COUNT;
+
+        //
+        // Out of bounds should return None for checked variant
+        //
+
+        assert_eq!(large.test_group(LARGE_BIT_FIELD_GROUP_COUNT), None);
+
+        //
+        // Set causes test to return true.
+        //
+
+        large.set_bit(bit);
+        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(true));
+        unsafe {
+            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), true);
+        }
+
+        //
+        // Clear causes test to return false.
+        //
+
+        large.clear_bit(bit);
+        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(false));
+        unsafe {
+            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), false);
+        }
+
+        //
+        // Changing another group has no affect on the bit being tested.
+        //
+
+        large.set_bit(different_group_bit);
+        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(false));
+        unsafe {
+            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), false);
+        }
+
+        //
+        // Clear causes test to return false.
+        //
+
+        large.set_bit(bit);
+        large.clear_bit(different_group_bit);
+        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(true));
+        unsafe {
+            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), true);
+        }
+    }
 }

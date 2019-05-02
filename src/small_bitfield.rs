@@ -482,7 +482,7 @@ mod tests {
 
         //
         // Clear causes test to return false.
-        //s
+        //
 
         small.clear_bit(0);
         assert_eq!(small.test_bit(0), Some(false));
@@ -572,7 +572,7 @@ mod tests {
         // Calling clear with 0 results in no change.
         //
 
-        small.set_field(0);
+        small.clear_field(0);
         assert_eq!(small.bitfield, a_s);
     }
 }
