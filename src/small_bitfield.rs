@@ -12,14 +12,6 @@ pub struct SmallBitField {
 
 /// Defines functionality unique to SmallBitField.
 impl SmallBitField {
-    /// Creates a new, empty SmallBitField
-    ///
-    /// # Returns
-    /// A SmallBitField.
-    pub fn new() -> SmallBitField {
-        SmallBitField { bitfield: 0 }
-    }
-
     /// Sets bits in the bit field.
     ///
     /// # Arguments
@@ -39,6 +31,14 @@ impl SmallBitField {
 
 /// Defines the FastBitField interface for SmallBitField.
 impl FastBitField for SmallBitField {
+    /// Creates a new, empty SmallBitField
+    ///
+    /// # Returns
+    /// A SmallBitField.
+    fn new() -> Self {
+        SmallBitField { bitfield: 0 }
+    }
+
     /// Gets the number of bits available in the bitfield type.
     ///
     /// # Returns

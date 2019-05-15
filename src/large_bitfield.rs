@@ -19,17 +19,6 @@ pub struct LargeBitField {
 
 /// Defines the FastBitField interface for LargeBitField.
 impl LargeBitField {
-    /// Creates a new, empty LargeBitField
-    ///
-    /// # Returns
-    /// A LargeBitField.
-    pub fn new() -> LargeBitField {
-        LargeBitField {
-            layer_cache: 0,
-            bitfield: [0; LARGE_BIT_FIELD_GROUP_COUNT],
-        }
-    }
-
     /// Gets whether or not a specific group in the bit field has any bits set.
     ///
     /// # Arguments
@@ -230,6 +219,17 @@ impl LargeBitField {
 
 /// Defines the FastBitField interface for LargeBitField.
 impl FastBitField for LargeBitField {
+    /// Creates a new, empty LargeBitField
+    ///
+    /// # Returns
+    /// A LargeBitField.
+    fn new() -> Self {
+        LargeBitField {
+            layer_cache: 0,
+            bitfield: [0; LARGE_BIT_FIELD_GROUP_COUNT],
+        }
+    }
+
     /// Gets the number of bits available in the bitfield type.
     ///
     /// # Returns
@@ -829,7 +829,7 @@ mod tests {
     // Method Tests
     //
 
-     #[test]
+    #[test]
     fn validate_set_and_clear_field() {
         let mut large = LargeBitField::new();
         let mut expected_toplayer: usize = 0;
@@ -1067,9 +1067,15 @@ mod tests {
         //
 
         large.set_bit(bit);
-        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(true));
+        assert_eq!(
+            large.test_group(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+            Some(true)
+        );
         unsafe {
-            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), true);
+            assert_eq!(
+                large.test_group_unchecked(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+                true
+            );
         }
 
         //
@@ -1077,9 +1083,15 @@ mod tests {
         //
 
         large.clear_bit(bit);
-        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(false));
+        assert_eq!(
+            large.test_group(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+            Some(false)
+        );
         unsafe {
-            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), false);
+            assert_eq!(
+                large.test_group_unchecked(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+                false
+            );
         }
 
         //
@@ -1087,9 +1099,15 @@ mod tests {
         //
 
         large.set_bit(different_group_bit);
-        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(false));
+        assert_eq!(
+            large.test_group(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+            Some(false)
+        );
         unsafe {
-            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), false);
+            assert_eq!(
+                large.test_group_unchecked(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+                false
+            );
         }
 
         //
@@ -1098,9 +1116,15 @@ mod tests {
 
         large.set_bit(bit);
         large.clear_bit(different_group_bit);
-        assert_eq!(large.test_group(bit/LARGE_BIT_FIELD_GROUP_COUNT), Some(true));
+        assert_eq!(
+            large.test_group(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+            Some(true)
+        );
         unsafe {
-            assert_eq!(large.test_group_unchecked(bit/LARGE_BIT_FIELD_GROUP_COUNT), true);
+            assert_eq!(
+                large.test_group_unchecked(bit / LARGE_BIT_FIELD_GROUP_COUNT),
+                true
+            );
         }
     }
 }

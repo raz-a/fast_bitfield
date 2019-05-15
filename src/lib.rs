@@ -11,6 +11,12 @@ use debruijin;
 
 /// Defines the required functionality for fast bitfields
 pub trait FastBitField {
+    /// Creates a new, empty FastBitField
+    ///
+    /// # Returns
+    /// A FastBitField.
+    fn new() -> Self;
+
     /// Gets the number of bits available in the bitfield type.
     ///
     /// # Returns
